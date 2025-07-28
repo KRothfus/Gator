@@ -3,58 +3,75 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 
-
-
 export type Config = {
-    dbUrl: string,
-    currentUserName: string
+  dbUrl: string;
+  currentUserName: string;
+};
+
+export function setUser(userName: string) {
+  const config = readConfig();
+  const user = { dbUrl: config.dbUrl, currentUserName: userName };
+  writeConfig(user);
 }
 
-type CommandHandler = (
-    cmdName: string,
-    ...args: string[]
-) => void;
-
-type ComamndsRegistry = {
-    commands: Record<string,CommandHandler>
+export function readConfig(): Config {
+  const conf = fs.readFileSync(getConfigFilePath(), "utf-8");
+  const valid_conf = validateConfig(JSON.parse(conf));
+  return valid_conf;
 }
 
-export function setUser(userName: string){
-    const config = readConfig()
-    const user = {dbUrl: config.dbUrl,
-        currentUserName: userName
-    }
-    writeConfig(user)
+function getConfigFilePath(): string {
+  return "/root/.gatorconfig.json";//path.join(os.homedir(), "/Gator/.gatorconfig.json");
 }
 
-export function readConfig(): Config{
-    const conf = fs.readFileSync(getConfigFilePath(),"utf-8")
-    const valid_conf = validateConfig(JSON.parse(conf))
-    return valid_conf
-
+function writeConfig(cfg: Config) {
+  const cfg_json = {
+    db_url: cfg.dbUrl,
+    current_user_name: cfg.currentUserName,
+  };
+  fs.writeFileSync(getConfigFilePath(), JSON.stringify(cfg_json));
 }
 
-function getConfigFilePath(): string{
-return path.join(os.homedir(),"/Gator/.gatorconfig.json")
+function validateConfig(rawConfig: any): Config {
+  if (rawConfig.db_url && rawConfig.current_user_name) {
+    return {
+      dbUrl: rawConfig.db_url,
+      currentUserName: rawConfig.current_user_name,
+    };
+  } else {
+    return { dbUrl: rawConfig.db_url, currentUserName: "" };
+  }
 }
 
-function writeConfig(cfg: Config){
-    const cfg_json = {db_url: cfg.dbUrl, current_user_name: cfg.currentUserName}
-    fs.writeFileSync(getConfigFilePath(),JSON.stringify(cfg_json))
+export type CommandHandler = (cmdName: string, ...args: string[]) => void;
+
+export type CommandsRegistry = Record<string, CommandHandler>;
+
+export function handlerLogin(cmdName: string, ...args: string[]) {
+  if (args.length === 0) {
+    throw Error("Enter username.");
+  }
+  setUser(args[0]);
+  console.log(`${args[0]} has been set`);
 }
 
-function validateConfig(rawConfig: any): Config{
-    if(rawConfig.db_url && rawConfig.current_user_name){
-        return {dbUrl: rawConfig.db_url, currentUserName: rawConfig.current_user_name}
+export function registerCommand(
+  registry: CommandsRegistry,
+  cmdName: string,
+  handler: CommandHandler
+) {
+    registry[cmdName] = handler
+}
+
+export function runCommand(
+  registry: CommandsRegistry,
+  cmdName: string,
+  ...args: string[]
+) {
+    const command = registry[cmdName]
+    if(command){
+    command(cmdName,...args)
     }else{
-        return {dbUrl: rawConfig.db_url, currentUserName: ""}
+        console.log(`${cmdName} does not exist.`)
     }
-}
-
-export function handlerLogin(cmdName: string, ...args: string[]){
-    if(args.length === 0){
-        throw error("Enter username.")
-    }
-    setUser(args[0])
-    console.log(`${args[0]} has been set`)
 }
