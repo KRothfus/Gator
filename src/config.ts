@@ -2,6 +2,7 @@ import { error } from "console";
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { getUser } from "./lib/db/queries/users";
 
 export type Config = {
   dbUrl: string;
@@ -21,7 +22,7 @@ export function readConfig(): Config {
 }
 
 function getConfigFilePath(): string {
-  return "/root/.gatorconfig.json";//path.join(os.homedir(), "/Gator/.gatorconfig.json");
+  return path.join(os.homedir(), ".gatorconfig.json");
 }
 
 function writeConfig(cfg: Config) {
@@ -43,19 +44,23 @@ function validateConfig(rawConfig: any): Config {
   }
 }
 
-export type CommandHandler = (cmdName: string, ...args: string[]) => void;
+export type CommandHandler = (cmdName: string, ...args: string[]) => Promise<void>;
 
 export type CommandsRegistry = Record<string, CommandHandler>;
 
-export function handlerLogin(cmdName: string, ...args: string[]) {
+export async function handlerLogin(cmdName: string, ...args: string[]) {
   if (args.length === 0) {
     throw Error("Enter username.");
+  }
+  const userCheck = await getUser(args[0])
+  if (!userCheck){
+    throw Error(`${args[0]} does not exists.`)
   }
   setUser(args[0]);
   console.log(`${args[0]} has been set`);
 }
 
-export function registerCommand(
+export async function registerCommand(
   registry: CommandsRegistry,
   cmdName: string,
   handler: CommandHandler
@@ -63,15 +68,15 @@ export function registerCommand(
     registry[cmdName] = handler
 }
 
-export function runCommand(
+export async function runCommand(
   registry: CommandsRegistry,
   cmdName: string,
   ...args: string[]
 ) {
     const command = registry[cmdName]
     if(command){
-    command(cmdName,...args)
+    await command(cmdName,...args)
     }else{
-        console.log(`${cmdName} does not exist.`)
+       throw Error(`${cmdName} does not exist.`)
     }
 }
