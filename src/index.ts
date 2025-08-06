@@ -7,6 +7,7 @@ import {
 } from "./config";
 import { CommandsRegistry } from "./config";
 import {  registerHandler, reset, users } from "./lib/db/queries/users";
+import { agg } from "./rssfeed";
 
 async function main() {
   const registry: CommandsRegistry = {};
@@ -14,6 +15,7 @@ async function main() {
   registerCommand(registry, "register",registerHandler)
   registerCommand(registry,'reset',reset)
   registerCommand(registry,'users',users)
+  registerCommand(registry,"agg", agg)
   const inputs = process.argv;
   const args = inputs.slice(2);
     
