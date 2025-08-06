@@ -7,7 +7,7 @@ type RSSItem = {
     pubDate: string
 }
 
-export async function fetchFeed(feedURL: string){
+export async function fetchFeed(feedURL: string){//need to figure this out
 const data = (await fetch('gator')).text()
 const parser = new XMLParser();
 const jsonObj = parser.parse(data)
