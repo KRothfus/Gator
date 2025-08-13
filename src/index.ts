@@ -6,8 +6,9 @@ import {
   setUser,
 } from "./config";
 import { CommandsRegistry } from "./config";
-import { addfeed } from "./feedcommands";
+import { addfeed, feedsHandler } from "./feedcommands";
 import {  registerHandler, reset, users } from "./lib/db/queries/users";
+import { feeds } from "./lib/db/schema";
 import { agg } from "./rssfeed";
 
 async function main() {
@@ -18,6 +19,7 @@ async function main() {
   registerCommand(registry,'users',users)
   registerCommand(registry,"agg", agg)
   registerCommand(registry,"addfeed", addfeed)
+  registerCommand(registry, "feeds", feedsHandler)
   const inputs = process.argv;
   const args = inputs.slice(2);
     
@@ -39,3 +41,4 @@ async function main() {
 }
 
 main();
+// What needs to be done here? HELP!

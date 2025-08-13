@@ -19,6 +19,12 @@ export async function getUsers() {
     return results
 }
 
+
+export async function getUserById(user_id: string){
+    const user_name = await db.select().from(usersSchema).where(eq(usersSchema.id,user_id))
+    return user_name[0] ?? undefined
+}
+
 export async function users() {
     const results = await getUsers()
     const currentUser = readConfig().currentUserName
