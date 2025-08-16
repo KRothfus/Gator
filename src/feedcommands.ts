@@ -16,7 +16,8 @@ export async function addfeed(cmdName: string, feedName: string, feedURL:string)
         throw new Error(`User ${currentUser} not found`)
     }
     const feedCreated = await createFeed(feedName, feedURL, currentUserId.id)
-    printFeed(feedCreated, currentUserId)
+    await follow(feedCreated.url)
+    
 }
 
 export type Feed = typeof feeds.$inferSelect;
@@ -46,7 +47,13 @@ export async function feedsHandler() {
     }    
 }
 
-export type FeedFollow = typeof feed_follows.$inferSelect;
+export type FeedFollow = {
+    id?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    user_id: string;
+    feed_id: string;
+}
 
 export async function createFeedFollow(feedFollows:FeedFollow, userId: string) {
     const [newFeedFollow] = await db.insert(feed_follows).values(feedFollows).returning();
@@ -77,17 +84,19 @@ export async function follow(url: string) {
     }
 
     const feed = await db.select().from(feeds).where(eq(feeds.url, url)).limit(1);
-   
+
+   if(feed.length === 0) {
+        throw new Error(`Feed with URL ${url} not found`);
+    }
 
     const feedFollowed: FeedFollow = {
         user_id: currentUserId,
         feed_id: feed[0].id,
-        id: "",
-        createdAt: new Date(),
-        updatedAt: new Date(),
     };
 
-    await createFeedFollow(feedFollowed, currentUserId);
+    const createdFeedFollow = await createFeedFollow(feedFollowed, currentUserId);
+    console.log(`Feed followed: ${createdFeedFollow[0].feed_name} by ${createdFeedFollow[0].user_name}`);
+    return createdFeedFollow
 }
 
 export async function getFeedFollowsForUser(userName:string) {
@@ -113,9 +122,17 @@ export async function following() {
     if (!feedsFollowed) {
         throw new Error(`No feeds followed by user ${currentUser}`);
     }
-    
+    // console.log(`* User: ${currentUser}`);
     for (const feedFollow of feedsFollowed) {
-        console.log(`* Feed ID: ${feedFollow.feed_id}`);
+        const feedName  = await getFeedbyId(feedFollow.feed_id);
+        console.log(`${feedName.name}`);
     }
 }
 
+async function getFeedbyId(feedId: string) {
+    const feed = await db.select().from(feeds).where(eq(feeds.id, feedId)).limit(1);
+    if (feed.length === 0) {
+        throw new Error(`Feed with ID ${feedId} not found`);
+    }
+    return feed[0];
+}
