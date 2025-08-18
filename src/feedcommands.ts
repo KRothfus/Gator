@@ -76,6 +76,8 @@ export async function createFeedFollow(feedFollows:FeedFollow, userId: string) {
     return result;
 }
 
+// this is just to save my streak!
+
 export async function follow(url: string) {
     const currentUser = readConfig().currentUserName;
     const currentUserId = (await getUser(currentUser))?.id;
