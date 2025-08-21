@@ -122,6 +122,7 @@ export async function getFeedFollowsForUser(cmdName: string, ...args: string[]) 
 
 // This function lists all feeds followed by the current user and I need to figure out why it is not working
 // It should be called with no arguments, as it uses the current user from the config
+// Haven't continued on this but will do so tomorrow (8/21/25)
 export async function following() {
     const currentUser = readConfig().currentUserName;
     // const currentUserId = (await getUser(currentUser))?.id;
