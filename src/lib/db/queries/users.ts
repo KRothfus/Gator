@@ -1,6 +1,6 @@
 import { sql, eq } from "drizzle-orm";
 import { db } from "..";
-import { users as usersSchema } from "../schema";
+import { feed_follows, feeds, users as usersSchema } from "../schema";
 import { readConfig, setUser } from "src/config";
 
 
@@ -40,6 +40,8 @@ export async function users() {
 export async function reset(){
     try{
     const [result] = await db.delete(usersSchema)
+    const feedFollowsDeleted = await db.delete(feed_follows)
+    const feedsDeleted = await db.delete(feeds)
     console.log('Database reset successfully.')
     process.exit(0)
     }catch(error){
