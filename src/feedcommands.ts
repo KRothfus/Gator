@@ -9,14 +9,15 @@ export async function createFeed(feedName: string, feedURL: string, currentUserI
       return result;
 }
 
-export async function addfeed(cmdName: string, feedName: string, feedURL:string) {
-    const currentUser = readConfig().currentUserName
-    const currentUserId = (await getUser(currentUser))
-    if(!currentUserId){
-        throw new Error(`User ${currentUser} not found`)
-    }
-    const feedCreated = await createFeed(feedName, feedURL, currentUserId.id)
-    await follow("",feedCreated.url)
+export async function addfeed(cmdName: string, user: User, ...args: string[]) {
+    const feedName = args[0];
+    const feedURL = args[1];
+
+    const currentUser = user.name //readConfig().currentUserName
+    const currentUserId = user.id //await getUser(currentUser)
+
+    const feedCreated = await createFeed(feedName, feedURL, currentUserId)
+    await follow("",user, feedURL)
     
 }
 
@@ -79,13 +80,10 @@ export async function createFeedFollow(feedFollows:FeedFollow, userId: string) {
 
 // this is just to save my streak! twice
 
-export async function follow(cmdName: string, url: string) {
-    const currentUser = readConfig().currentUserName;
-    const currentUserId = (await getUser(currentUser))?.id;
-    if (!currentUserId) {
-        throw new Error(`User ${currentUser} not found`);
-    }
-
+export async function follow(cmdName: string, user: User, ...args: string[]) {
+    const url = args[0];
+    const currentUser = user.name //readConfig().currentUserName;
+    const currentUserId = user.id //await getUser(currentUser);
     const feed = await db.select().from(feeds).where(eq(feeds.url, url)).limit(1);
 
    if(feed.length === 0) {
@@ -112,9 +110,7 @@ export async function getFeedFollowsForUser(cmdName: string, ...args: string[]) 
         throw new Error(`User ${userName} not found`);
     }
     const feedFollows = await db.select().from(feed_follows).where(eq(feed_follows.user_id, userID));
-    if (feedFollows.length === 0) {
-        throw new Error(`No feed follows found for user ${userName}`);
-    }
+
     return feedFollows;
     
 }
@@ -123,16 +119,10 @@ export async function getFeedFollowsForUser(cmdName: string, ...args: string[]) 
 // This function lists all feeds followed by the current user and I need to figure out why it is not working
 // It should be called with no arguments, as it uses the current user from the config
 // Haven't continued on this but will do so tomorrow (8/21/25)
-export async function following() {
-    const currentUser = readConfig().currentUserName;
-    // const currentUserId = (await getUser(currentUser))?.id;
-    // if (!currentUserId) {
-    //     throw new Error(`User ${currentUser} not found`);
-    // }
+export async function following(cmdName: string, user: User, ...args: string[]) {
+    const currentUser = user.name //readConfig().currentUserName;
     const feedsFollowed = await getFeedFollowsForUser("",currentUser);
-    if (!feedsFollowed) {
-        throw new Error(`No feeds followed by user ${currentUser}`);
-    }
+ 
     // console.log(`* User: ${currentUser}`);
     for (const feedFollow of feedsFollowed) {
         const feedName  = await getFeedbyId(feedFollow.feed_id);
