@@ -8,6 +8,13 @@
       "when": 1754659856783,
       "tag": "0000_fine_mantis",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1756907913408,
+      "tag": "0001_bitter_la_nuit",
+      "breakpoints": true
     }
   ]
 }
