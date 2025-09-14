@@ -1,4 +1,4 @@
-import { pgTable, timestamp, uuid, text, integer } from "drizzle-orm/pg-core";
+import { pgTable, timestamp, uuid, text, integer, unique } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -19,9 +19,11 @@ export const feeds = pgTable("feeds", {
     .$onUpdate(() => new Date()),
   name: text("name").notNull(),
   url: text("url").notNull().unique(),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  last_fetched_at: timestamp("last_fetched_at"),
-})
+  userId: uuid("user_id")  // Note: also changed from user_id to userId
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  lastFetchAt: timestamp("last_fetch_at"),  // Note: camelCase property name
+});
 
 export const feed_follows = pgTable("feed_follows", {
   id: uuid("id").primaryKey().defaultRandom().notNull(),
@@ -30,6 +32,9 @@ export const feed_follows = pgTable("feed_follows", {
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date()),
-  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
-  feed_id: uuid('feed_id').notNull().references(() => feeds.id, { onDelete: 'cascade' }).unique(),
-})
+  user_id: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  feed_id: uuid('feed_id').notNull().references(() => feeds.id, { onDelete: 'cascade' }),
+}, (table) => ({
+  // This creates a composite unique constraint - a user can follow each feed only once
+  unique_user_feed: unique().on(table.user_id, table.feed_id),
+}));

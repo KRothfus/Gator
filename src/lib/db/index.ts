@@ -8,5 +8,3 @@ import { listenerCount } from "process";
 const config = readConfig();
 const conn = postgres(config.dbUrl);
 export const db = drizzle(conn, { schema });
-// oh hello...oh hello...
-// perfect

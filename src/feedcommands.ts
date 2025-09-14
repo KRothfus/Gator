@@ -5,7 +5,7 @@ import { feed_follows, feeds, users } from "./lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function createFeed(feedName: string, feedURL: string, currentUserId: string) {
-    const [result] = await db.insert(feeds).values({name: feedName, url: feedURL, user_id: currentUserId}).returning();
+    const [result] = await db.insert(feeds).values({name: feedName, url: feedURL, userId: currentUserId}).returning();
       return result;
 }
 
@@ -39,9 +39,9 @@ export async function feedsHandler() {
         throw new Error("No feeds found")
     }
     for (let item of feedQuery){
-        const user = await getUserById(item.user_id)
+        const user = await getUserById(item.userId)
         if(!user){
-            throw new Error(`Failed ot find user for feed ${item.user_id}`)
+            throw new Error(`Failed ot find user for feed ${item.userId}`)
         }
         printFeed(item,user);
         console.log('==========================');

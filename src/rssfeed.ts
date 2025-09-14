@@ -70,7 +70,7 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
 // keep the streak!
 
 
-export async function agg(time_between_reqs: string) {
+export async function agg(cmdName: string,time_between_reqs: string) {
 const delay = parseDuration(time_between_reqs);
 console.log(`Collecting feeds every ${time_between_reqs}`);
 try{
@@ -97,6 +97,7 @@ await new Promise<void>((resolve) => {
 }
 
 function parseDuration(duration: string): number {
+  console.log(`Parsing duration: ${JSON.stringify(duration)}`);
   const regex = /^(\d+)(ms|s|m|h)$/;
 const match = duration.match(regex);
 if (!match) {
@@ -119,11 +120,15 @@ switch (unit) {
 }
 
 export async function markFeedFetched(id: string) {
-  await db.update(feeds).set({ last_fetched_at: new Date(), updatedAt: new Date() }).where(eq(feeds.id,id));
+  await db.update(feeds).set({ lastFetchAt: new Date(), updatedAt: new Date() }).where(eq(feeds.id,id));
 }
 
 export async function getNextFeedToFetch() {
-  const feed_to_fetch = await db.select().from(feeds).orderBy(sql`${feeds.last_fetched_at} asc nulls first`).limit(1);
+  const feed_to_fetch = await db
+    .select()
+    .from(feeds)
+    .orderBy(sql`${feeds.lastFetchAt} asc nulls first`)  // Changed to lastFetchAt
+    .limit(1);
   return feed_to_fetch[0];
 }
 

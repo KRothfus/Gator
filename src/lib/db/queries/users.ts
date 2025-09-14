@@ -37,16 +37,33 @@ export async function users() {
     })
 }
 
+// export async function reset(){
+//     try{
+//     const [result] = await db.delete(usersSchema)
+//     const feedFollowsDeleted = await db.delete(feed_follows)
+//     const feedsDeleted = await db.delete(feeds)
+//   }catch(error){
+//     console.log(error)
+//     process.exit(1)
+//   }
+//   console.log('Database reset successfully.')
+//   process.exit(0)
+// }
+
+
 export async function reset(){
     try{
-    const [result] = await db.delete(usersSchema)
-    const feedFollowsDeleted = await db.delete(feed_follows)
-    const feedsDeleted = await db.delete(feeds)
-    console.log('Database reset successfully.')
-    process.exit(0)
-    }catch(error){
-        console.log(error)
-        process.exit(1)
+        // Drop tables in the right order (due to foreign key constraints)
+        await db.execute(sql`DROP TABLE IF EXISTS feed_follows CASCADE`);
+        await db.execute(sql`DROP TABLE IF EXISTS feeds CASCADE`);
+        await db.execute(sql`DROP TABLE IF EXISTS users CASCADE`);
+        await db.execute(sql`DROP SCHEMA IF EXISTS drizzle CASCADE`);
+        
+        console.log('Database reset successfully - all tables dropped.');
+        process.exit(0);
+    } catch(error){
+        console.log(error);
+        process.exit(1);
     }
 }
 
