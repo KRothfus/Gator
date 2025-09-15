@@ -1,3 +1,4 @@
+import { browse } from "./commands/posts";
 import { unfollow } from "./commands/unfollow";
 import {
   handlerLogin,
@@ -26,6 +27,7 @@ async function main() {
   registerCommand(registry, "following", middlewareLoggedIn(following));
   registerCommand(registry, "addfeed", middlewareLoggedIn(addfeed));
   registerCommand(registry, "unfollow", middlewareLoggedIn(unfollow));
+  registerCommand(registry, "browse", browse)
   const inputs = process.argv;
   const args = inputs.slice(2);
 
