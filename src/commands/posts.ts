@@ -54,4 +54,4 @@ export async function browse(cmdName: string, ...args: string[]) {
         console.log(`  Published:   ${post.publishedAt}`);
         console.log(`  Description: ${post.description}`);
     }
-}
+} //left the door open...
