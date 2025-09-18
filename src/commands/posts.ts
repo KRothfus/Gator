@@ -29,7 +29,7 @@ export async function createPost(post: Post) {
         updatedAt: post.updatedAt ?? now,
     }).returning();
 }
-
+//what is the issue here? 
 export async function getPostsForUser(numPosts: number, userId: string) {
     const allPosts = await db.select().from(posts).where(eq(posts.userId, userId)).orderBy(posts.publishedAt).limit(numPosts);
     return allPosts;
