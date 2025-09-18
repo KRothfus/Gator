@@ -5,6 +5,10 @@ import { feed_follows, feeds, users } from "./lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function createFeed(feedName: string, feedURL: string, currentUserId: string) {
+    const check = await db.select().from(feeds).where(eq(feeds.url, feedURL)).limit(1);
+    if (check.length > 0) {
+        throw new Error(`Feed with URL ${feedURL} already exists`);
+    }
     const [result] = await db.insert(feeds).values({name: feedName, url: feedURL, userId: currentUserId}).returning();
       return result;
 }

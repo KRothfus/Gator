@@ -151,8 +151,7 @@ export async function scrapeFeeds() {
         feedId: feed.id,
         publishedAt: new Date(item.pubDate),
         description: item.description,
-        userId: feed.userId,
-        id: ""
+        userId: feed.userId
       });
     });
   } catch (e) {

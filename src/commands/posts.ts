@@ -1,6 +1,6 @@
 
 export type Post = {
-  id: string;
+  id?: string;
   title: string;
   url: string;
   feedId: string;
@@ -15,7 +15,7 @@ import { db } from "../lib/db/index";
 import { posts, feeds, users } from "../lib/db/schema";
 import { eq } from "drizzle-orm";
 
-import { getUserById } from "../lib/db/queries/users";
+import { getUser, getUserById } from "../lib/db/queries/users";
 import { get } from "http";
 import { read } from "fs";
 import { readConfig } from "src/config";
@@ -23,11 +23,19 @@ import { readConfig } from "src/config";
 // Placeholder functions for post-related operations
 export async function createPost(post: Post) {
     const now = new Date();
-    return db.insert(posts).values({
-        ...post,
-        createdAt: post.createdAt ?? now,
-        updatedAt: post.updatedAt ?? now,
-    }).returning();
+    try {
+        const existingPost = await db.select().from(posts).where(eq(posts.url, post.url)).limit(1);
+        // if (existingPost.length > 0) {
+        //     console.log(`Post with URL ${post.url} already exists. Skipping insertion.`);
+        //     return ; // Return the existing post
+        // }
+    }
+    catch (error) {
+        console.error("Error checking for existing post:", error);
+        return
+    }
+
+    return
 }
 //what is the issue here? 
 export async function getPostsForUser(numPosts: number, userId: string) {
@@ -38,13 +46,14 @@ export async function getPostsForUser(numPosts: number, userId: string) {
 export async function browse(cmdName: string, ...args: string[]) {
     const numPosts = args[0] ? parseInt(args[0]) : 2;
     const userName = readConfig().currentUserName;
-    const userId = await getUserById(userName);
+    const user = (await getUser(userName));
+    const userId = user?.id;
     if (!userId) {
         console.log("No user logged in.");
         return;
     }
-    const allPosts = await getPostsForUser(numPosts, userId.id);
-    if (!allPosts) {
+    const allPosts = await getPostsForUser(numPosts, userId);
+    if (!allPosts || allPosts.length === 0) {
         console.log("No posts found.");
         return;
     }
@@ -54,4 +63,4 @@ export async function browse(cmdName: string, ...args: string[]) {
         console.log(`  Published:   ${post.publishedAt}`);
         console.log(`  Description: ${post.description}`);
     }
-} //left the door open...
+} //left the door open..
